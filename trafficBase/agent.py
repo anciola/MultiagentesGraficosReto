@@ -160,11 +160,11 @@ class Destination(Agent):
             # checar si hay autos
             coches = [obj for obj in contenidos if isinstance(obj, Car)]
             calles = [obj for obj in contenidos if isinstance(obj, Road)]
-            flip = self.random.choice([0, 1])
+            flip = self.random.choice([0, 0, 0, 0, 1])
             if len(coches) > 0:
                 # si hay un coche:
                 # si 0 / 1 -> quita o no ese coche
-                if flip:
+                if not flip:
                     print('un auto ha llegado a su destino en ' + str(posicion))
                     car = self.random.choice(coches)
                     self.model.grid.remove_agent(car)
