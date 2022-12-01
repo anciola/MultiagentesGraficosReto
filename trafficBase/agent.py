@@ -120,17 +120,49 @@ class Traffic_Light(Agent):
     """
     Traffic Light agent. Tells Cars When They Can Cross And When They Cant
     """
-    def __init__(self, unique_id, model, color=False, timeToChange=10):
+    def __init__(self, unique_id, pos, model, color=False, timeToChange=10):
         super().__init__(unique_id, model)
         self.color = color
         self.timeToChange = timeToChange
+        self.pos = pos
+        self.autos_esperando = 0
 
     def step(self):
         # modificarlo para que en vez de ser fijo, dependa de si hay coches vecinos o no, 
         # que se coordinen entre los de la misma interseccion para que solo uno este prendido a la vez
-        if self.model.schedule.steps % self.timeToChange == 0:
-            self.color = not self.color
-        # pass
+
+        # se ubica al semaforo "hermano" (misma interseccion, misma calle)
+        # esto se hace gracias a que el parametro moore es falso,
+        # no se ve en celdas que estan en diagonal
+        vecinos = self.model.grid.get_neighbors(self.pos, False, False, 1)
+        semaforo_hermano = [obj for obj in vecinos if isinstance(obj, Traffic_Light)][0]
+        
+        # se ubica a los semaforos primos (misma interseccion, otra calle)
+        # ahora el parametro moore es verdadero
+        # semaforos primo esta en diagonal
+        vecinos2 = self.model.grid.get_neighbors(self.pos, True, False, 1)
+        semaforo_primo = [obj for obj in vecinos2 if isinstance(obj, Traffic_Light)]
+
+        # solo el semaforo mas cercano de la esquina detecta a un primo, 
+        # este es el que coordina cambios de color
+        if len(semaforo_primo) == 2:
+            semaforo_primo.remove(semaforo_hermano)
+            semaforo_primo = semaforo_primo[0]
+
+            # se calculan autos cercanos
+            autos_cercanos = self.model.grid.get_neighbors(self.pos, False, False, 4)
+            autos_cercanos = [obj for obj in autos_cercanos if isinstance(obj, Car)]
+            self.autos_esperando = len(autos_cercanos)
+
+            # si se tienen mas que los de la otra calle, se da prioridad
+            if self.autos_esperando > semaforo_primo.autos_esperando:
+                self.color = True
+                semaforo_hermano.color = True
+                semaforo_primo.color = False
+            else:
+                semaforo_hermano.color = self.color
+        else:
+            pass
 
 
 # Clase de Destino

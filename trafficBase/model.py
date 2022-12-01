@@ -38,7 +38,9 @@ class RandomModel(Model):
                         
                     # Se Colocan Semaforos
                     elif col in ["S", "s"]:
-                        agent = Traffic_Light(f"tl{r*self.width+c}", self, 
+                        agent = Traffic_Light(f"tl{r*self.width+c}", 
+                                              (c, self.height - r - 1),
+                                              self,                
                                               False if col == "S" else True,
                                               int(dataDictionary[col]))
                         self.grid.place_agent(agent, (c, self.height - r - 1))
