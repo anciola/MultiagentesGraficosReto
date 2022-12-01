@@ -74,10 +74,23 @@ class Car(Agent):
             if len(semaforo) == 0:
                 if len(auto) == 0:
                     self.move(siguiente_posicion)
-                #else:
-                    #print('Hay un auto, no me puedo mover')
-                    # agregar opcion rebasar:
-                    # diagonal enfrente, diagonal atras, a un lado todas vacias
+                else:
+                    # si si esta ocupada la celda siguiente, el auto busca rebasar
+                    vecinos = self.model.grid.get_neighborhood(
+                                self.pos,
+                                moore=False,
+                                include_center=False)
+
+                    for posicion in vecinos:
+                        contenidos = self.model.grid.get_cell_list_contents([posicion])
+                        
+                        coches = [obj for obj in contenidos if isinstance(obj, Car)]
+                        calles = [obj for obj in contenidos if isinstance(obj, Road)]
+                        # checar si hay autos
+                        # si no los hay, se mueve lateralmente
+                        if len(calles) > 0 and len(coches) == 0:
+                            self.move(posicion)
+
             else:
                 # en caso de que hubiera semaforo, se ve su color
                 semaforo = semaforo[0]
@@ -88,7 +101,7 @@ class Car(Agent):
                 #else:
                     #print("el semaforo esta en rojo, no me puedo mover")
         
-        # para el caso en el que se encuentra directamente sobre un semaforo
+        # en caso de que se encuentra directamente sobre un semaforo
         # se sigue la direccion que tenia en el turno anterior
         semaforo = [obj for obj in this_cell if isinstance(obj, Traffic_Light)]
         if len(semaforo) != 0:
